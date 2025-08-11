@@ -26,7 +26,7 @@ jobs:
       with:
         go-version: 1.24.6
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
     - name: install dep
       run: go get -v ./...
     - name: Build
