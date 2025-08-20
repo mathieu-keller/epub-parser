@@ -260,7 +260,7 @@ var Relator = map[string]string{
 	"sfx":"special effects provider",
 	"sgd":"stage director",
 	"sgn":"signer",
-	"sht":"spporting host",
+	"sht":"supporting host",
 	"sll":"seller",
 	"sng":"singer",
 	"spk":"speaker",
