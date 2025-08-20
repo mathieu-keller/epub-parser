@@ -20,11 +20,11 @@
   "customManagers": [
     {
       "customType": "regex",
-      "fileMatch": [
-        "^\\.github/workflows/.*\\.ya?ml$"  
+      "managerFilePatterns": [
+        "/^\\.github/workflows/.*\\.ya?ml$/"
       ],
       "matchStrings": [
-        "go-version:\\s(?<currentValue>.*?)\\s" 
+        "go-version:\\s(?<currentValue>.*?)\\s"
       ],
       "depNameTemplate": "go",
       "datasourceTemplate": "golang-version"
@@ -54,8 +54,12 @@
       "semanticCommitType": "fix"
     },
     {
-      "matchManagers": ["gomod"],
-      "matchDepTypes": ["indirect"],
+      "matchManagers": [
+        "gomod"
+      ],
+      "matchDepTypes": [
+        "indirect"
+      ],
       "enabled": true,
       "semanticCommitType": "fix"
     }
