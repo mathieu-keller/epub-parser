@@ -9,11 +9,14 @@ on:
 
 jobs:
   dry-release:
-    name: dry release
-    uses: mathieu-keller/github-action-workflows/.github/workflows/semantic-release.yaml@2.0.1
-    with:
-      release-branch: main
-      dry: true
+    runs-on: ubuntu-24.04
+    name: create dry release
+    steps:
+      - name: dry release
+        uses: mathieu-keller/semantic-release-action@v1.0.0
+        with:
+          release-branch: main
+          dry-run: true
   test:
     name: test
     runs-on: ubuntu-24.04
@@ -34,10 +37,13 @@ jobs:
     - name: Test
       run: go test -v ./...
   release:
+    runs-on: ubuntu-24.04
     name: create release
-    needs: [test]
+    needs: [ test ]
     if: ${{ github.ref == 'refs/heads/main' }}
-    uses: mathieu-keller/github-action-workflows/.github/workflows/semantic-release.yaml@2.0.1
-    with:
-      release-branch: main
-      dry: false
+    steps:
+      - name: create release
+        uses: mathieu-keller/semantic-release-action@v1.0.0
+        with:
+          release-branch: main
+          dry-run: false
