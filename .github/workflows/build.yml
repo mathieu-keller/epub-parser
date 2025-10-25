@@ -9,7 +9,7 @@ on:
 jobs:
   dry-release:
     name: dry release
-    uses: mathieu-keller/github-action-workflows/.github/workflows/semantic-release.yaml@2.1.2
+    uses: mathieu-keller/github-action-workflows/.github/workflows/semantic-release.yaml@v1.0.0
     with:
       release-branch: main
       dry: true
@@ -36,7 +36,7 @@ jobs:
     name: create release
     needs: [test]
     if: ${{ github.ref == 'refs/heads/main' }}
-    uses: mathieu-keller/github-action-workflows/.github/workflows/semantic-release.yaml@2.1.2
+    uses: mathieu-keller/github-action-workflows/.github/workflows/semantic-release.yaml@v1.0.0
     with:
       release-branch: main
       dry: false
