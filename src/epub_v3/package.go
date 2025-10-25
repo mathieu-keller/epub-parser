@@ -2,7 +2,7 @@ package epub_v3
 
 import (
 	"encoding/xml"
-	"github.com/mathieu-keller/epub-parser/model"
+	"github.com/mathieu-keller/epub-parser/v2/model"
 	"strings"
 )
 

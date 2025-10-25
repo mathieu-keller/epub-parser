@@ -28,7 +28,7 @@ This library is particularly useful for applications requiring detailed metadata
 Add the library to your project using `go get`:
 
 ```sh
-go get github.com/mathieu-keller/epub-parser
+go get github.com/mathieu-keller/epub-parser/v2
 ```
 
 ---

@@ -3,7 +3,7 @@ package epub
 import (
 	"archive/zip"
 	"bytes"
-	"github.com/mathieu-keller/epub-parser/model"
+	"github.com/mathieu-keller/epub-parser/v2/model"
 	"os"
 	"strconv"
 	"testing"

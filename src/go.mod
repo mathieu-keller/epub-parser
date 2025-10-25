@@ -1,4 +1,4 @@
-module github.com/mathieu-keller/epub-parser
+module github.com/mathieu-keller/epub-parser/v2
 
 go 1.23
 
