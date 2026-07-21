@@ -2,8 +2,9 @@ package epub_v3
 
 import (
 	"encoding/xml"
-	"github.com/mathieu-keller/epub-parser/v2/model"
 	"strings"
+
+	"github.com/mathieu-keller/epub-parser/v2/model"
 )
 
 func getMetadata(metaData map[string]map[string]Meta, id string, metaDataKey string) string {
@@ -135,18 +136,22 @@ func ParseOpf(book *model.Book) error {
 
 	identifiers := make([]model.Identifier, len(*opf.Metadata.Identifier))
 	for i, identifier := range *opf.Metadata.Identifier {
-		parts := strings.Split(identifier.Text, ":")
-		scheme := parts[0]
-		id := parts[1]
+		text := strings.TrimSpace(identifier.Text)
+		var id, scheme string
+		parts := strings.SplitN(text, ":", 2)
+		if len(parts) == 1 {
+			scheme = ""
+			id = parts[0]
+		} else {
+			scheme = parts[0]
+			id = parts[1]
+		}
 		identifiers[i] = model.Identifier{
 			Id:     id,
 			Scheme: scheme,
 		}
 		if identifier.Id == opf.UniqueIdentifier {
-			book.Metadata.MainId = model.Identifier{
-				Id:     id,
-				Scheme: scheme,
-			}
+			book.Metadata.MainId = identifiers[i]
 		}
 	}
 	book.Metadata.Identifiers = &identifiers

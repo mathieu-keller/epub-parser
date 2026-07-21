@@ -3,10 +3,11 @@ package epub
 import (
 	"archive/zip"
 	"bytes"
-	"github.com/mathieu-keller/epub-parser/v2/model"
 	"os"
 	"strconv"
 	"testing"
+
+	"github.com/mathieu-keller/epub-parser/v2/model"
 )
 
 func Test_parse_epub_2_0_opf(t *testing.T) {
@@ -47,6 +48,31 @@ func Test_parse_epub_3_0_opf(t *testing.T) {
 		t.Fail()
 	}
 	assertMetadata(t, book.Metadata)
+}
+
+func Test_parse_epub_3_0_opf_with_identifier_without_urn(t *testing.T) {
+	binaryFile, err := os.ReadFile("./epub_with_identifier_without_urn.epub")
+	if err != nil {
+		t.Log(err.Error())
+		t.Fail()
+	}
+	zipReader, err := zip.NewReader(bytes.NewReader(binaryFile), int64(len(binaryFile)))
+	if err != nil {
+		t.Log(err.Error())
+		t.Fail()
+	}
+
+	book, err := OpenBook(zipReader)
+	if err != nil {
+		t.Log(err.Error())
+		t.Fail()
+	}
+	identifiers := *book.Metadata.Identifiers
+	assertSize("identifiers size", t, len(identifiers), 2)
+	assertEquals("identifier[0].Id", t, identifiers[0].Id, "978-1-492-05789-5")
+	assertEquals("identifier[0].Scheme", t, identifiers[0].Scheme, "")
+	assertEquals("identifier[1].Id", t, identifiers[1].Id, "1529044197")
+	assertEquals("identifier[1].Scheme", t, identifiers[1].Scheme, "ISBN")
 }
 
 func assertMetadata(t *testing.T, metaData model.Metadata) {
