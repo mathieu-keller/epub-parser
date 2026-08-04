@@ -5,9 +5,13 @@ import (
 	"github.com/mathieu-keller/epub-parser/v2/model"
 )
 
-func getTitles(metaData []DefaultAttributes) *[]model.Title {
-	titles := make([]model.Title, len(metaData))
-	for i, title := range metaData {
+func getTitles(metaData *[]DefaultAttributes) *[]model.Title {
+	if metaData == nil {
+		titles := make([]model.Title, 0)
+		return &titles
+	}
+	titles := make([]model.Title, len(*metaData))
+	for i, title := range *metaData {
 		titles[i] = model.Title{
 			Title:    title.Text,
 			Language: title.Lang,
@@ -18,58 +22,65 @@ func getTitles(metaData []DefaultAttributes) *[]model.Title {
 	return &titles
 }
 
-func getLanguages(metaData []ID) *[]string {
-	languages := make([]string, len(metaData))
-	for i, language := range metaData {
+func getLanguages(metaData *[]ID) *[]string {
+	if metaData == nil {
+		languages := make([]string, 0)
+		return &languages
+	}
+	languages := make([]string, len(*metaData))
+	for i, language := range *metaData {
 		languages[i] = language.Text
 	}
 	return &languages
 }
 
-func getCreators(metaData []Creator) *[]model.Creator {
-	if metaData != nil {
-		creators := make([]model.Creator, len(metaData))
-		for i, creator := range metaData {
-			role, ok := model.Relator[creator.Role]
-			if !ok && creator.Role != "" {
-				role = "unknown"
-			}
-			creators[i] = model.Creator{
-				Name:     creator.Text,
-				FileAs:   creator.FileAs,
-				RawRole:  creator.Role,
-				Language: creator.Lang,
-				Role:     role,
-			}
-		}
+func getCreators(metaData *[]Creator) *[]model.Creator {
+	if metaData == nil {
+		creators := make([]model.Creator, 0)
 		return &creators
 	}
-	return nil
+	creators := make([]model.Creator, len(*metaData))
+	for i, creator := range *metaData {
+		role, ok := model.Relator[creator.Role]
+		if !ok && creator.Role != "" {
+			role = "unknown"
+		}
+		creators[i] = model.Creator{
+			Name:     creator.Text,
+			FileAs:   creator.FileAs,
+			RawRole:  creator.Role,
+			Language: creator.Lang,
+			Role:     role,
+		}
+	}
+	return &creators
 }
 
-func getDefaultAttributes(metaData []DefaultAttributes) *[]model.DefaultAttributes {
-	if metaData != nil {
-		defaultAttributes := make([]model.DefaultAttributes, len(metaData))
-		for i, defaultAttribute := range metaData {
-			defaultAttributes[i] = model.DefaultAttributes{
-				Text:     defaultAttribute.Text,
-				Language: defaultAttribute.Lang,
-			}
-		}
+func getDefaultAttributes(metaData *[]DefaultAttributes) *[]model.DefaultAttributes {
+	if metaData == nil {
+		defaultAttributes := make([]model.DefaultAttributes, 0)
 		return &defaultAttributes
 	}
-	return nil
+	defaultAttributes := make([]model.DefaultAttributes, len(*metaData))
+	for i, defaultAttribute := range *metaData {
+		defaultAttributes[i] = model.DefaultAttributes{
+			Text:     defaultAttribute.Text,
+			Language: defaultAttribute.Lang,
+		}
+	}
+	return &defaultAttributes
 }
 
-func getDate(metaData []Date) *[]string {
-	if metaData != nil {
-		dates := make([]string, len(metaData))
-		for i, date := range metaData {
-			dates[i] = date.Text
-		}
+func getDate(metaData *[]Date) *[]string {
+	if metaData == nil {
+		dates := make([]string, 0)
 		return &dates
 	}
-	return nil
+	dates := make([]string, len(*metaData))
+	for i, date := range *metaData {
+		dates[i] = date.Text
+	}
+	return &dates
 }
 
 func ParseOpf(book *model.Book) error {
@@ -79,31 +90,53 @@ func ParseOpf(book *model.Book) error {
 		return err
 	}
 
-	identifiers := make([]model.Identifier, len(*opf.Metadata.Identifier))
-	for i, identifier := range *opf.Metadata.Identifier {
-		identifiers[i] = model.Identifier{
-			Id:     identifier.Text,
-			Scheme: identifier.Scheme,
-		}
-		if identifier.Id == opf.UniqueIdentifier {
-			book.Metadata.MainId = model.Identifier{
+	if opf.Metadata == nil {
+		emptyIdentifiers := make([]model.Identifier, 0)
+		emptyTitles := make([]model.Title, 0)
+		emptyStrings := make([]string, 0)
+		emptyCreators := make([]model.Creator, 0)
+		emptyDefaultAttributes := make([]model.DefaultAttributes, 0)
+
+		book.Metadata.Identifiers = &emptyIdentifiers
+		book.Metadata.Titles = &emptyTitles
+		book.Metadata.Languages = &emptyStrings
+		book.Metadata.Creators = &emptyCreators
+		book.Metadata.Contributors = &emptyCreators
+		book.Metadata.Publishers = &emptyDefaultAttributes
+		book.Metadata.Subjects = &emptyDefaultAttributes
+		book.Metadata.Descriptions = &emptyDefaultAttributes
+		book.Metadata.Dates = &emptyStrings
+		return nil
+	}
+
+	identifiers := make([]model.Identifier, 0)
+	if opf.Metadata.Identifier != nil {
+		identifiers = make([]model.Identifier, len(*opf.Metadata.Identifier))
+		for i, identifier := range *opf.Metadata.Identifier {
+			identifiers[i] = model.Identifier{
 				Id:     identifier.Text,
 				Scheme: identifier.Scheme,
+			}
+			if identifier.Id == opf.UniqueIdentifier {
+				book.Metadata.MainId = model.Identifier{
+					Id:     identifier.Text,
+					Scheme: identifier.Scheme,
+				}
 			}
 		}
 	}
 	book.Metadata.Identifiers = &identifiers
 
-	book.Metadata.Titles = getTitles(*opf.Metadata.Title)
-	book.Metadata.Languages = getLanguages(*opf.Metadata.Language)
-	book.Metadata.Creators = getCreators(*opf.Metadata.Creator)
-	book.Metadata.Contributors = getCreators(*opf.Metadata.Contributor)
-	book.Metadata.Publishers = getDefaultAttributes(*opf.Metadata.Publisher)
-	book.Metadata.Subjects = getDefaultAttributes(*opf.Metadata.Subject)
-	book.Metadata.Descriptions = getDefaultAttributes(*opf.Metadata.Description)
-	book.Metadata.Dates = getDate(*opf.Metadata.Date)
+	book.Metadata.Titles = getTitles(opf.Metadata.Title)
+	book.Metadata.Languages = getLanguages(opf.Metadata.Language)
+	book.Metadata.Creators = getCreators(opf.Metadata.Creator)
+	book.Metadata.Contributors = getCreators(opf.Metadata.Contributor)
+	book.Metadata.Publishers = getDefaultAttributes(opf.Metadata.Publisher)
+	book.Metadata.Subjects = getDefaultAttributes(opf.Metadata.Subject)
+	book.Metadata.Descriptions = getDefaultAttributes(opf.Metadata.Description)
+	book.Metadata.Dates = getDate(opf.Metadata.Date)
 
-	return err
+	return nil
 }
 
 type Package struct {

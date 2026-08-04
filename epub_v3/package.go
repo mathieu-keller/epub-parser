@@ -33,9 +33,12 @@ func getMetadataSchema(metaData map[string]map[string]Meta, id string, metaDataK
 	return ""
 }
 
-func getMetaMap(metaData []Meta) *map[string]map[string]Meta {
+func getMetaMap(metaData *[]Meta) *map[string]map[string]Meta {
 	metaMap := make(map[string]map[string]Meta)
-	for _, meta := range metaData {
+	if metaData == nil {
+		return &metaMap
+	}
+	for _, meta := range *metaData {
 		if meta.Refines != "" && meta.Property != "" {
 			id := strings.Replace(meta.Refines, "#", "", 1)
 			innerMap, ok := metaMap[id]
@@ -49,9 +52,13 @@ func getMetaMap(metaData []Meta) *map[string]map[string]Meta {
 	return &metaMap
 }
 
-func getTitles(metaData []DefaultAttributes, metaMap map[string]map[string]Meta) *[]model.Title {
-	titles := make([]model.Title, len(metaData))
-	for i, title := range metaData {
+func getTitles(metaData *[]DefaultAttributes, metaMap map[string]map[string]Meta) *[]model.Title {
+	if metaData == nil {
+		titles := make([]model.Title, 0)
+		return &titles
+	}
+	titles := make([]model.Title, len(*metaData))
+	for i, title := range *metaData {
 		fileAs := getMetadata(metaMap, title.Id, "file-as")
 		titleType := getMetadata(metaMap, title.Id, "title-type")
 		titles[i] = model.Title{
@@ -64,32 +71,37 @@ func getTitles(metaData []DefaultAttributes, metaMap map[string]map[string]Meta)
 	return &titles
 }
 
-func getLanguages(metaData []ID) *[]string {
-	languages := make([]string, len(metaData))
-	for i, language := range metaData {
+func getLanguages(metaData *[]ID) *[]string {
+	if metaData == nil {
+		languages := make([]string, 0)
+		return &languages
+	}
+	languages := make([]string, len(*metaData))
+	for i, language := range *metaData {
 		languages[i] = language.Text
 	}
 	return &languages
 }
 
-func getCreators(metaData []DefaultAttributes, metaMap map[string]map[string]Meta) *[]model.Creator {
-	if metaData != nil {
-		creators := make([]model.Creator, len(metaData))
-		for i, creator := range metaData {
-			fileAs := getMetadata(metaMap, creator.Id, "file-as")
-			rawRole := getMetadata(metaMap, creator.Id, "role")
-			role := getRole(metaMap, creator, rawRole)
-			creators[i] = model.Creator{
-				Name:     creator.Text,
-				FileAs:   fileAs,
-				RawRole:  rawRole,
-				Language: creator.Lang,
-				Role:     role,
-			}
-		}
+func getCreators(metaData *[]DefaultAttributes, metaMap map[string]map[string]Meta) *[]model.Creator {
+	if metaData == nil {
+		creators := make([]model.Creator, 0)
 		return &creators
 	}
-	return nil
+	creators := make([]model.Creator, len(*metaData))
+	for i, creator := range *metaData {
+		fileAs := getMetadata(metaMap, creator.Id, "file-as")
+		rawRole := getMetadata(metaMap, creator.Id, "role")
+		role := getRole(metaMap, creator, rawRole)
+		creators[i] = model.Creator{
+			Name:     creator.Text,
+			FileAs:   fileAs,
+			RawRole:  rawRole,
+			Language: creator.Lang,
+			Role:     role,
+		}
+	}
+	return &creators
 }
 
 func getRole(metaMap map[string]map[string]Meta, creator DefaultAttributes, rawRole string) string {
@@ -101,29 +113,31 @@ func getRole(metaMap map[string]map[string]Meta, creator DefaultAttributes, rawR
 	return role
 }
 
-func getDefaultAttributes(metaData []DefaultAttributes) *[]model.DefaultAttributes {
-	if metaData != nil {
-		defaultAttributes := make([]model.DefaultAttributes, len(metaData))
-		for i, defaultAttribute := range metaData {
-			defaultAttributes[i] = model.DefaultAttributes{
-				Text:     defaultAttribute.Text,
-				Language: defaultAttribute.Lang,
-			}
-		}
+func getDefaultAttributes(metaData *[]DefaultAttributes) *[]model.DefaultAttributes {
+	if metaData == nil {
+		defaultAttributes := make([]model.DefaultAttributes, 0)
 		return &defaultAttributes
 	}
-	return nil
+	defaultAttributes := make([]model.DefaultAttributes, len(*metaData))
+	for i, defaultAttribute := range *metaData {
+		defaultAttributes[i] = model.DefaultAttributes{
+			Text:     defaultAttribute.Text,
+			Language: defaultAttribute.Lang,
+		}
+	}
+	return &defaultAttributes
 }
 
-func getDates(metaData []ID) *[]string {
-	if metaData != nil {
-		dates := make([]string, len(metaData))
-		for i, date := range metaData {
-			dates[i] = date.Text
-		}
+func getDates(metaData *[]ID) *[]string {
+	if metaData == nil {
+		dates := make([]string, 0)
 		return &dates
 	}
-	return nil
+	dates := make([]string, len(*metaData))
+	for i, date := range *metaData {
+		dates[i] = date.Text
+	}
+	return &dates
 }
 
 func ParseOpf(book *model.Book) error {
@@ -132,39 +146,62 @@ func ParseOpf(book *model.Book) error {
 	if err != nil {
 		return err
 	}
-	metaMap := getMetaMap(*opf.Metadata.Meta)
 
-	identifiers := make([]model.Identifier, len(*opf.Metadata.Identifier))
-	for i, identifier := range *opf.Metadata.Identifier {
-		text := strings.TrimSpace(identifier.Text)
-		var id, scheme string
-		parts := strings.SplitN(text, ":", 2)
-		if len(parts) == 1 {
-			scheme = ""
-			id = parts[0]
-		} else {
-			scheme = parts[0]
-			id = parts[1]
-		}
-		identifiers[i] = model.Identifier{
-			Id:     id,
-			Scheme: scheme,
-		}
-		if identifier.Id == opf.UniqueIdentifier {
-			book.Metadata.MainId = identifiers[i]
+	if opf.Metadata == nil {
+		emptyIdentifiers := make([]model.Identifier, 0)
+		emptyTitles := make([]model.Title, 0)
+		emptyStrings := make([]string, 0)
+		emptyCreators := make([]model.Creator, 0)
+		emptyDefaultAttributes := make([]model.DefaultAttributes, 0)
+
+		book.Metadata.Identifiers = &emptyIdentifiers
+		book.Metadata.Titles = &emptyTitles
+		book.Metadata.Languages = &emptyStrings
+		book.Metadata.Creators = &emptyCreators
+		book.Metadata.Contributors = &emptyCreators
+		book.Metadata.Publishers = &emptyDefaultAttributes
+		book.Metadata.Subjects = &emptyDefaultAttributes
+		book.Metadata.Descriptions = &emptyDefaultAttributes
+		book.Metadata.Dates = &emptyStrings
+		return nil
+	}
+
+	metaMap := getMetaMap(opf.Metadata.Meta)
+
+	identifiers := make([]model.Identifier, 0)
+	if opf.Metadata.Identifier != nil {
+		identifiers = make([]model.Identifier, len(*opf.Metadata.Identifier))
+		for i, identifier := range *opf.Metadata.Identifier {
+			text := strings.TrimSpace(identifier.Text)
+			var id, scheme string
+			parts := strings.SplitN(text, ":", 2)
+			if len(parts) == 1 {
+				scheme = ""
+				id = parts[0]
+			} else {
+				scheme = parts[0]
+				id = parts[1]
+			}
+			identifiers[i] = model.Identifier{
+				Id:     id,
+				Scheme: scheme,
+			}
+			if identifier.Id == opf.UniqueIdentifier {
+				book.Metadata.MainId = identifiers[i]
+			}
 		}
 	}
 	book.Metadata.Identifiers = &identifiers
 
-	book.Metadata.Titles = getTitles(*opf.Metadata.Title, *metaMap)
-	book.Metadata.Languages = getLanguages(*opf.Metadata.Language)
-	book.Metadata.Creators = getCreators(*opf.Metadata.Creator, *metaMap)
-	book.Metadata.Contributors = getCreators(*opf.Metadata.Contributor, *metaMap)
-	book.Metadata.Publishers = getDefaultAttributes(*opf.Metadata.Publisher)
-	book.Metadata.Subjects = getDefaultAttributes(*opf.Metadata.Subject)
-	book.Metadata.Descriptions = getDefaultAttributes(*opf.Metadata.Description)
-	book.Metadata.Dates = getDates(*opf.Metadata.Date)
-	return err
+	book.Metadata.Titles = getTitles(opf.Metadata.Title, *metaMap)
+	book.Metadata.Languages = getLanguages(opf.Metadata.Language)
+	book.Metadata.Creators = getCreators(opf.Metadata.Creator, *metaMap)
+	book.Metadata.Contributors = getCreators(opf.Metadata.Contributor, *metaMap)
+	book.Metadata.Publishers = getDefaultAttributes(opf.Metadata.Publisher)
+	book.Metadata.Subjects = getDefaultAttributes(opf.Metadata.Subject)
+	book.Metadata.Descriptions = getDefaultAttributes(opf.Metadata.Description)
+	book.Metadata.Dates = getDates(opf.Metadata.Date)
+	return nil
 }
 
 type Package struct {
