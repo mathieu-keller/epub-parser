@@ -19,6 +19,7 @@ This library is particularly useful for applications requiring detailed metadata
     - Subjects
     - Descriptions
     - Dates
+- **Manifest Extraction**: Access all resources (documents, images, stylesheets, media) with their types and locations.
 - **ZIP-based EPUB Parsing**: Reads EPUB files directly from ZIP archives.
 
 ---
@@ -91,6 +92,7 @@ Publishers   *[]DefaultAttributes // List of publishers
 Subjects     *[]DefaultAttributes // List of subjects (categories, genres)
 Descriptions *[]DefaultAttributes // List of descriptions
 Dates        *[]string            // List of publication dates
+Manifest     *Manifest            // List of resources (documents, images, stylesheets, etc.)
 }
 ```
 
