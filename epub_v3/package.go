@@ -194,7 +194,7 @@ func ParseOpf(book *model.Book) error {
 	book.Metadata.Identifiers = &identifiers
 
 	var manifest model.Manifest
-	if opf.Manifest != nil {
+	if opf.Manifest != nil && opf.Manifest.Item != nil {
 		for _, item := range *opf.Manifest.Item {
 			manifest = append(manifest, model.ManifestItem{
 				Id:        item.Id,

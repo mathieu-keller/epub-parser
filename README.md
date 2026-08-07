@@ -146,6 +146,27 @@ Dates        *[]string            // List of publication dates
 
 ---
 
+## Model: Manifest
+
+The `Manifest` represents a collection of resources in the EPUB file, including documents, images, stylesheets, and other media assets. It provides information about each resource's location and type.
+
+```go
+type Manifest []ManifestItem
+
+type ManifestItem struct {
+    Id        string  // Unique identifier for the resource
+    Href      string  // File path relative to the package document
+    MediaType string  // MIME type of the resource (e.g., "application/xhtml+xml", "image/png")
+}
+```
+
+The manifest allows you to:
+- Access all resources contained in the EPUB file
+- Identify resource types by their MIME types
+- Locate resources using their href paths
+
+---
+
 ## Contributing
 
 1. Fork the repository.
