@@ -193,6 +193,18 @@ func ParseOpf(book *model.Book) error {
 	}
 	book.Metadata.Identifiers = &identifiers
 
+	var manifest model.Manifest
+	if opf.Manifest != nil {
+		for _, item := range *opf.Manifest.Item {
+			manifest = append(manifest, model.ManifestItem{
+				Id:        item.Id,
+				Href:      item.Href,
+				MediaType: item.MediaType,
+			})
+		}
+	}
+	book.Metadata.Manifest = &manifest
+
 	book.Metadata.Titles = getTitles(opf.Metadata.Title, *metaMap)
 	book.Metadata.Languages = getLanguages(opf.Metadata.Language)
 	book.Metadata.Creators = getCreators(opf.Metadata.Creator, *metaMap)
