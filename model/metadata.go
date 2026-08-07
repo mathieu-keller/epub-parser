@@ -11,6 +11,7 @@ type Metadata struct {
 	Subjects     *[]DefaultAttributes
 	Descriptions *[]DefaultAttributes
 	Dates        *[]string
+	Manifest     *Manifest
 }
 
 type Creator struct {

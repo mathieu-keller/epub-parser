@@ -2,6 +2,7 @@ package epub_v2
 
 import (
 	"encoding/xml"
+
 	"github.com/mathieu-keller/epub-parser/v2/model"
 )
 
@@ -126,6 +127,18 @@ func ParseOpf(book *model.Book) error {
 		}
 	}
 	book.Metadata.Identifiers = &identifiers
+
+	var manifest model.Manifest
+	if opf.Manifest != nil {
+		for _, item := range *opf.Manifest.Item {
+			manifest = append(manifest, model.ManifestItem{
+				Id:        item.Id,
+				Href:      item.Href,
+				MediaType: item.MediaType,
+			})
+		}
+	}
+	book.Metadata.Manifest = &manifest
 
 	book.Metadata.Titles = getTitles(opf.Metadata.Title)
 	book.Metadata.Languages = getLanguages(opf.Metadata.Language)
