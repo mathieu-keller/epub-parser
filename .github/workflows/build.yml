@@ -15,7 +15,7 @@ jobs:
       dry: true
   test:
     name: test
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
     - name: Set up Go
       uses: actions/setup-go@v7
